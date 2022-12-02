@@ -1,7 +1,10 @@
-name := "cscie88c-final-project"
+ThisBuild / organization := "org.cscie88c"
+ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / version := "0.1"
 
-version := "0.1"
 
-scalaVersion := "2.13.10"
-
-libraryDependencies += "org.apache.spark" % "spark-streaming_2.12" % "3.3.1" % "provided"
+lazy val root = (project in file("."))
+  .settings(
+    name := "cscie88c-final-project",
+    libraryDependencies ++= Dependencies.spark ++ Dependencies.kafka ++ Dependencies.test
+  )
