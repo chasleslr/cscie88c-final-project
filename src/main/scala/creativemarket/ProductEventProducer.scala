@@ -30,31 +30,22 @@ object ProductEventProducer extends App {
   properties.put("key.serializer", classOf[StringSerializer])
   properties.put("value.serializer", classOf[StringSerializer])
 
-//  val producer = new KafkaProducer[String, String](properties)
+  val producer = new KafkaProducer[String, String](properties)
 
   val searchStream: Stream[ProductSearch] = Stream.continually(ProductSearch.create()).take(5)
   val resultStream: Stream[List[ProductResult]] = searchStream.map(x => ProductSearch.createResults(x))
   val viewStream: Stream[List[Option[ProductView]]] = resultStream.map(x => x.map(y => y.createView))
   val clickStream: Stream[List[Option[ProductClick]]] = resultStream.map(x => x.map(y => y.createClick))
 
-//  val eventStream = searchStream
-//    .zip(resultStream)
-//    .zip(viewStream)
-//    .zip(clickStream)
-//    .map{case ((a,b),c) => (a,b,c)}
-////    .map(_.toRecord(kafkaConf.topic))
-//  eventStream.foreach(println)
+  searchStream.map(_.toRecord(kafkaConf.topic)).foreach(println)
+  resultStream.flatten.map(_.toRecord(kafkaConf.topic)).foreach(println)
+  viewStream.flatten.flatten.map(_.toRecord(kafkaConf.topic)).foreach(println)
+  clickStream.flatten.flatten.map(_.toRecord(kafkaConf.topic)).foreach(println)
 
-//  searchStream.foreach(x => producer.send(x.toRecord(kafkaConf.topic)))
-//  resultStream.flatten.foreach(x => producer.send(x.toRecord(kafkaConf.topic)))
-//  viewStream.flatten.flatten.foreach(x => producer.send(x.toRecord(kafkaConf.topic)))
-//  clickStream.flatten.flatten.foreach(x => producer.send(x.toRecord(kafkaConf.topic)))
-
-  searchStream.foreach(println)
-  resultStream.flatten.foreach(println)
-  viewStream.flatten.flatten.foreach(println)
-  clickStream.flatten.flatten.foreach(println)
-
+  searchStream.foreach(x => producer.send(x.toRecord(kafkaConf.topic)))
+  resultStream.flatten.foreach(x => producer.send(x.toRecord(kafkaConf.topic)))
+  viewStream.flatten.flatten.foreach(x => producer.send(x.toRecord(kafkaConf.topic)))
+  clickStream.flatten.flatten.foreach(x => producer.send(x.toRecord(kafkaConf.topic)))
 
   //  val recordStream = searchStream.map(x => (x.toRecord(kafkaConf.topicSearch), ProductSearch.createResults(x).flatMap(x => x.toRecord(kafkaConf.topicResult))))
 

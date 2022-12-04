@@ -16,14 +16,12 @@ import java.text.SimpleDateFormat
 
 trait Event {
   val id: UUID
-  def eventType: String = {this.getClass.getName}
   val recordedAt: String
 }
 
 case class ProductSearch(id: UUID, pageType: PageType, results: Int, recordedAt: String) extends Event {
-  override val eventType = "ProductSearch"
   def toRecord(topic: String): ProducerRecord[String, String] = {
-    new ProducerRecord[String, String](topic, id.toString, this.asJson.noSpaces)
+    new ProducerRecord[String, String](topic, id.toString, this.asJson.deepMerge(Map("type" -> "ProductSearch").asJson).noSpaces)
   }
 }
 
@@ -43,19 +41,19 @@ final case class ProductResult(id: UUID, searchId: UUID, productId: UUID, rank: 
     }
   }
   def toRecord(topic: String): ProducerRecord[String, String] = {
-    new ProducerRecord[String, String](topic, id.toString, this.asJson.noSpaces)
+    new ProducerRecord[String, String](topic, id.toString, this.asJson.deepMerge(Map("type" -> "ProductResult").asJson).noSpaces)
   }
 }
 
 final case class ProductView(id: UUID, searchId: UUID, productId: UUID, recordedAt: String) extends Event {
   def toRecord(topic: String): ProducerRecord[String, String] = {
-    new ProducerRecord[String, String](topic, id.toString, this.asJson.noSpaces)
+    new ProducerRecord[String, String](topic, id.toString, this.asJson.deepMerge(Map("type" -> "ProductView").asJson).noSpaces)
   }
 }
 
 final case class ProductClick(id: UUID, searchId: UUID, productId: UUID, recordedAt: String) extends Event  {
   def toRecord(topic: String): ProducerRecord[String, String] = {
-    new ProducerRecord[String, String](topic, id.toString, this.asJson.noSpaces)
+    new ProducerRecord[String, String](topic, id.toString, this.asJson.deepMerge(Map("type" -> "ProductClick").asJson).noSpaces)
   }
 }
 final case class ProductAddToCart(id: UUID, searchId: UUID, productId: UUID, recordedAt: String) extends Event
