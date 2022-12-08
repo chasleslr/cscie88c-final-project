@@ -1,4 +1,4 @@
-package creativemarket.events
+package generator
 
 object PageType extends Enumeration {
   type PageType = String

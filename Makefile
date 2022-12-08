@@ -1,3 +1,5 @@
+ELK_VERSION := 8.5.2-amd64
+
 start-kafka:
 	@docker-compose up -d kafka-ui kafka zookeeper
 	@echo "Kafka UI: http://localhost:8080"
@@ -13,3 +15,8 @@ start-spark:
 stop-spark:
 	@docker-compose down spark-master spark-worker
 
+start-elk:
+	@docker-compose up -d setup elasticsearch kibana logstash
+
+stop-elk:
+	@docker-compose down elasticsearch kibana logstash
