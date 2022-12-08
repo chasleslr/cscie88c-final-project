@@ -1,8 +1,8 @@
 package generator
 
-import common.{ProductResult, ProductSearch, ProductView}
 import config.{EventGeneratorConfig, KafkaConfig}
-import common.ProductSearch.createResults
+import events.ProductSearch
+import events.ProductSearch.createResults
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.{Logger, LoggerFactory}
@@ -38,15 +38,13 @@ object EventGenerator
 
   def getRecords(productSearch: ProductSearch): List[ProducerRecord[String, String]] = {
     val results = createResults(productSearch)
+    val views = results.flatMap(_.createView(eventConf.viewRate))
+    val clicks = views.flatMap(_.createClick(eventConf.clickRate))
+    val purchase = clicks.flatMap(_.createPurchase(eventConf.purchaseRate))
 
-    val viewsRecords = results.flatMap(_.createView).map(_.toRecord(eventConf.topic))
-    val clickRecords = results.flatMap(_.createClick).map(_.toRecord(eventConf.topic))
-    val purchaseRecords = results.flatMap(_.createPurchase).map(_.toRecord(eventConf.topic))
+    val events = List(productSearch) ::: views ::: clicks ::: purchase
 
-    val resultRecords = results.map(_.toRecord(eventConf.topic))
-    val searchRecords = List(productSearch.toRecord(eventConf.topic))
-
-    searchRecords ::: resultRecords ::: viewsRecords ::: clickRecords ::: purchaseRecords
+    events.map(_.toMessage.toRecord(eventConf.topic))
   }
 
   def sleep[A](x: A, millis: Int): A = {
