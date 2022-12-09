@@ -20,3 +20,6 @@ start-elk:
 
 stop-elk:
 	@docker-compose down elasticsearch kibana logstash
+
+pdf:
+	@pandoc csci-e88c_final_project.md -o final_project.pdf --from markdown --template eisvogel --toc --listings --number-sections

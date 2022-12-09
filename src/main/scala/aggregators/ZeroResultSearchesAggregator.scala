@@ -11,12 +11,15 @@ object ZeroResultSearchesAggregator extends SparkStreamingAggregator {
   implicit val config: ZeroResultSearchesAggregatorConfig = loadConfig[ZeroResultSearchesAggregatorConfig](ZERO_RESULT_AGGREGATOR_CONFIG)
   implicit val generatorConfig: EventGeneratorConfig = loadConfig[EventGeneratorConfig](EVENT_GENERATOR_CONFIG)
 
+  // get events from Kafka topic
   val events = getEvents(generatorConfig.topic)
+  // parse JSON into columns using schema from case class
   val searches = getEventsOfType[ProductSearch](events)
 
   val zeroResultSearches = searches
     .filter(col("results").equalTo(0))
 
+  // count number of rows where 'results' = 0
   val counts = zeroResultSearches
     .withWatermark("recordedAt", "1 minute")
     .groupBy(
@@ -24,6 +27,7 @@ object ZeroResultSearchesAggregator extends SparkStreamingAggregator {
     )
     .count()
 
+  // write to Kafka topic
   val df = toKafkaDataFrame(counts, col("window").cast("string"))
   writeKafka(df, config.topic)
 }

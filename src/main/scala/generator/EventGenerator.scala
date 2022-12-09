@@ -29,21 +29,28 @@ object EventGenerator
 
   val producer = new KafkaProducer[String, String](properties)
 
+  // generate an infinite stream of ProductSearch instances
   val searchStream: Stream[ProductSearch] = Stream.continually(ProductSearch.create())
 
+  // for each item, wait, generate records, and send to a Kafka topic
   searchStream
     .map(sleep(_, 60000 / eventConf.searchesPerMinute))
     .map(getRecords)
     .foreach(x => x.map(log).foreach(producer.send))
 
   def getRecords(productSearch: ProductSearch): List[ProducerRecord[String, String]] = {
+    // each ProductSearch event generates multiple ProductSearch,
+    // ProductView, ProductClick, and ProductPurchase events; each
+    // with its own configured probability
     val results = createResults(productSearch)
     val views = results.flatMap(_.createView(eventConf.viewRate))
     val clicks = views.flatMap(_.createClick(eventConf.clickRate))
     val purchase = clicks.flatMap(_.createPurchase(eventConf.purchaseRate))
 
+    // concatenate all events
     val events = List(productSearch) ::: views ::: clicks ::: purchase
 
+    // generate an instance of ProductRecord for each event/message
     events.map(_.toMessage.toRecord(eventConf.topic))
   }
 

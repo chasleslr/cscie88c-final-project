@@ -14,14 +14,17 @@ trait SparkStreamingAggregator extends App {
   val SPARK_CONFIG_PATH: String = "org.cscie88c.spark"
   val KAFKA_CONFIG_PATH: String = "org.cscie88c.kafka"
 
+  // load config
   implicit val sparkConfig: SparkConfig = loadConfig[SparkConfig](SPARK_CONFIG_PATH)
   implicit val kafkaConfig: KafkaConfig = loadConfig[KafkaConfig](KAFKA_CONFIG_PATH)
 
+  // create spark seassion
   implicit val spark: SparkSession = SparkSession
     .builder()
     .master(sparkConfig.masterUrl)
     .getOrCreate()
 
+  // import spark implicits
   import spark.implicits._
   spark.sparkContext.setLogLevel("ERROR")
 
@@ -55,6 +58,7 @@ trait SparkStreamingAggregator extends App {
       .withColumn("recordedAt", col("recordedAt").cast("timestamp"))
   }
 
+  // TODO: polymorphic method
   def getEventsOfType[T <: Product : ClassTag : TypeTag](events: DataFrame): DataFrame = {
     events
       // filter rows where 'type' is equal to the name of the provided class
