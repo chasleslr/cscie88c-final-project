@@ -19,9 +19,6 @@ object EventTypeAggregator extends SparkStreamingAggregator {
       col("eventType")
     )
     .count()
-    .select(
-      col("window").getItem("")
-    )
 
   val df = toKafkaDataFrame(counts, col("window").cast("string"))
 
