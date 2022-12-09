@@ -14,7 +14,7 @@ trait Messageable {
     Message(
       key = this.key,
       eventType = this.eventType,
-      payload = this.toJson,
+      payload = this.toJson.noSpaces,
       recordedAt = this.timestamp
     )
   }

@@ -13,4 +13,4 @@ final case class EventGeneratorConfig(
 )
 
 final case class CountAggregatorConfig(name: String, topic: String)
-final case class ClickThroughRateAggregatorConfig(name: String, topic: String)
+final case class ZeroResultSearchesAggregatorConfig(name: String, topic: String)
